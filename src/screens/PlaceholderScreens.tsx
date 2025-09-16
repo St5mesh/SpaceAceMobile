@@ -1,42 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
-export function MissionsScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Missions</Text>
-      <Text style={styles.subtitle}>Mission tracker coming soon...</Text>
-    </SafeAreaView>
-  );
-}
-
-export function JournalScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Journal</Text>
-      <Text style={styles.subtitle}>Session log coming soon...</Text>
-    </SafeAreaView>
-  );
-}
-
-export function ShipScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Ship</Text>
-      <Text style={styles.subtitle}>Ship management coming soon...</Text>
-    </SafeAreaView>
-  );
-}
-
-export function MoreScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>More</Text>
-      <Text style={styles.subtitle}>Settings and export coming soon...</Text>
-    </SafeAreaView>
-  );
-}
-
 export function SectorDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>

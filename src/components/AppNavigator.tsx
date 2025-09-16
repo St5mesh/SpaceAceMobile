@@ -7,12 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import GalaxyScreen from '../screens/GalaxyScreen';
 import CharacterScreen from '../screens/CharacterScreen';
+import ShipScreen from '../screens/ShipScreen';
+import JournalScreen from '../screens/JournalScreen';
+import MissionsScreen from '../screens/MissionsScreen';
+import MoreScreen from '../screens/MoreScreen';
 import DiceRollerScreen from '../screens/DiceRollerScreen';
 import { 
-  MissionsScreen, 
-  JournalScreen, 
-  ShipScreen, 
-  MoreScreen, 
   SectorDetailScreen, 
   MissionDetailScreen 
 } from '../screens/PlaceholderScreens';
