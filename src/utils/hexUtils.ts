@@ -197,6 +197,39 @@ export class HexUtils {
   }
 
   /**
+   * Check if a sector should be discoverable from current position
+   * Based on game rules: sectors are discoverable if adjacent to discovered sectors
+   * @param targetHex Target sector coordinates
+   * @param discoveredSectors Array of discovered sector coordinates
+   * @returns True if the sector should be discoverable
+   */
+  static isDiscoverable(targetHex: HexCoordinate, discoveredSectors: HexCoordinate[]): boolean {
+    // A sector is discoverable if it's adjacent to any discovered sector
+    return discoveredSectors.some(discovered => {
+      const distance = this.hexDistance(targetHex, discovered);
+      return distance <= 1;
+    });
+  }
+
+  /**
+   * Get all sectors that should be visible from a given position
+   * @param centerHex Current position
+   * @param allSectors All sectors in the galaxy
+   * @param visibilityRange How far the player can see (default: 1 hex)
+   * @returns Array of sectors that should be visible
+   */
+  static getVisibleSectors(
+    centerHex: HexCoordinate, 
+    allSectors: HexCoordinate[], 
+    visibilityRange: number = 1
+  ): HexCoordinate[] {
+    return allSectors.filter(sector => {
+      const distance = this.hexDistance(centerHex, sector);
+      return distance <= visibilityRange;
+    });
+  }
+
+  /**
    * Check if two hex coordinates are equal
    * @param a First hex coordinate
    * @param b Second hex coordinate

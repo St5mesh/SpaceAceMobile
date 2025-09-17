@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   Dimensions,
+  PanResponder,
 } from 'react-native';
 import { Sector } from '../types';
 import { HexUtils } from '../utils/hexUtils';
@@ -16,6 +17,7 @@ interface HexGridProps {
   containerWidth: number;
   containerHeight: number;
   initialScale?: number;
+  onZoomChange?: (scale: number) => void;
 }
 
 const HexGrid: React.FC<HexGridProps> = ({
@@ -25,9 +27,43 @@ const HexGrid: React.FC<HexGridProps> = ({
   containerWidth,
   containerHeight,
   initialScale = 1,
+  onZoomChange,
 }) => {
   const [scale, setScale] = useState(initialScale);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
   const baseHexSize = 80;
+
+  // Handle zoom changes from ScrollView
+  const handleZoom = useCallback((event: any) => {
+    const newScale = event.nativeEvent.zoomScale;
+    setScale(newScale);
+    onZoomChange?.(newScale);
+  }, [onZoomChange]);
+
+  // Center the view on current sector
+  const centerOnCurrentSector = useCallback(() => {
+    if (!currentSectorId || !scrollViewRef.current) return;
+    
+    const currentSector = sectors.find(s => s.id === currentSectorId);
+    if (!currentSector) return;
+
+    const hexSize = baseHexSize * scale;
+    const pixelPos = HexUtils.hexToPixel(
+      { q: currentSector.hexQ, r: currentSector.hexR },
+      hexSize / 2
+    );
+
+    const centerX = pixelPos.x + containerWidth / 2 - containerWidth / 2;
+    const centerY = pixelPos.y + containerHeight / 2 - containerHeight / 2;
+
+    scrollViewRef.current?.scrollTo({
+      x: Math.max(0, centerX),
+      y: Math.max(0, centerY),
+      animated: true,
+    });
+  }, [currentSectorId, sectors, scale, containerWidth, containerHeight]);
 
   // Calculate hex positions
   const getHexLayout = () => {
@@ -74,6 +110,7 @@ const HexGrid: React.FC<HexGridProps> = ({
   return (
     <View style={[styles.container, { width: containerWidth, height: containerHeight }]}>
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollContainer}
         contentContainerStyle={{
           width: contentDims.width,
@@ -84,9 +121,12 @@ const HexGrid: React.FC<HexGridProps> = ({
         scrollEnabled={true}
         bounces={true}
         bouncesZoom={true}
-        minimumZoomScale={0.5}
-        maximumZoomScale={3}
+        minimumZoomScale={0.3}
+        maximumZoomScale={4.0}
         zoomScale={scale}
+        onZoomEnd={handleZoom}
+        centerContent={true}
+        decelerationRate="normal"
       >
         <View style={[styles.hexGridContainer]}>
           {hexLayout.map(({ sector, x, y, size }) => (
@@ -105,7 +145,7 @@ const HexGrid: React.FC<HexGridProps> = ({
                 size={size}
                 isCurrentSector={sector.id === currentSectorId}
                 onPress={onSectorPress}
-                showCoordinates={size < 100}
+                showCoordinates={scale > 1.5}
               />
             </View>
           ))}
