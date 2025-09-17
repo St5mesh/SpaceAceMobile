@@ -16,6 +16,7 @@ interface HexTileProps {
   size: number;
   isCurrentSector: boolean;
   isSelected?: boolean;
+  isSwapFirst?: boolean;
   onPress: (sector: Sector) => void;
   showCoordinates?: boolean;
 }
@@ -25,6 +26,7 @@ const HexTile: React.FC<HexTileProps> = ({
   size,
   isCurrentSector,
   isSelected = false,
+  isSwapFirst = false,
   onPress,
   showCoordinates = false,
 }) => {
@@ -89,6 +91,7 @@ const HexTile: React.FC<HexTileProps> = ({
 
   const getBorderColor = () => {
     if (isCurrentSector) return '#007AFF';
+    if (isSwapFirst) return '#9D4EDD'; // Purple for swap first selection
     if (isSelected) return '#FF6B35';
     if (sector.isDangerous) return '#DC3545';
     
@@ -114,7 +117,7 @@ const HexTile: React.FC<HexTileProps> = ({
 
   const overlayStyle = {
     ...hexStyle,
-    borderWidth: isCurrentSector ? 3 : isSelected ? 3 : 2,
+    borderWidth: isCurrentSector ? 3 : isSelected || isSwapFirst ? 3 : 2,
     borderColor: getBorderColor(),
   };
 
@@ -140,9 +143,16 @@ const HexTile: React.FC<HexTileProps> = ({
           )}
           
           {/* Selected sector indicator */}
-          {isSelected && !isCurrentSector && (
+          {isSelected && !isCurrentSector && !isSwapFirst && (
             <View style={styles.selectedIndicator}>
               <Ionicons name="checkmark-circle" size={size * 0.15} color="white" />
+            </View>
+          )}
+          
+          {/* Swap first selection indicator */}
+          {isSwapFirst && !isCurrentSector && (
+            <View style={styles.swapFirstIndicator}>
+              <Ionicons name="swap-horizontal" size={size * 0.15} color="white" />
             </View>
           )}
           
@@ -224,6 +234,14 @@ const styles = StyleSheet.create({
     top: 4,
     right: 4,
     backgroundColor: '#FF6B35',
+    borderRadius: 12,
+    padding: 2,
+  },
+  swapFirstIndicator: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#9D4EDD',
     borderRadius: 12,
     padding: 2,
   },

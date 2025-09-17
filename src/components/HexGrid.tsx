@@ -14,6 +14,7 @@ interface HexGridProps {
   sectors: Sector[];
   currentSectorId?: string;
   selectedSectorId?: string | null;
+  swapFirstSectorId?: string | null;
   onSectorPress?: (sector: Sector) => void;
   onSectorSelect?: (sector: Sector | null) => void;
   containerWidth: number;
@@ -26,6 +27,7 @@ const HexGrid = React.forwardRef<any, HexGridProps>(({
   sectors,
   currentSectorId,
   selectedSectorId,
+  swapFirstSectorId,
   onSectorPress,
   onSectorSelect,
   containerWidth,
@@ -52,6 +54,37 @@ const HexGrid = React.forwardRef<any, HexGridProps>(({
       onZoomChange?.(newScale);
     },
     centerOnCurrentSector,
+    pan: (direction: 'up' | 'down' | 'left' | 'right') => {
+      if (!scrollViewRef.current) return;
+      
+      const panDistance = 100;
+      let deltaX = 0;
+      let deltaY = 0;
+      
+      switch (direction) {
+        case 'up':
+          deltaY = -panDistance;
+          break;
+        case 'down':
+          deltaY = panDistance;
+          break;
+        case 'left':
+          deltaX = -panDistance;
+          break;
+        case 'right':
+          deltaX = panDistance;
+          break;
+      }
+      
+      scrollViewRef.current.scrollTo({
+        x: Math.max(0, panX + deltaX),
+        y: Math.max(0, panY + deltaY),
+        animated: true,
+      });
+      
+      setPanX(prev => prev + deltaX);
+      setPanY(prev => prev + deltaY);
+    },
   }));
 
   // Handle zoom changes from ScrollView
@@ -177,6 +210,7 @@ const HexGrid = React.forwardRef<any, HexGridProps>(({
                 size={size}
                 isCurrentSector={sector.id === currentSectorId}
                 isSelected={sector.id === selectedSectorId}
+                isSwapFirst={sector.id === swapFirstSectorId}
                 onPress={handleSectorPress}
                 showCoordinates={scale > 1.5}
               />

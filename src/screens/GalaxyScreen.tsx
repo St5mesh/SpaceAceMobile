@@ -32,6 +32,8 @@ export default function GalaxyScreen() {
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
   const [currentZoom, setCurrentZoom] = useState(1.0);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isSwapMode, setIsSwapMode] = useState(false);
+  const [swapFirstSectorId, setSwapFirstSectorId] = useState<string | null>(null);
   const hexGridRef = useRef<any>(null);
 
   useLayoutEffect(() => {
@@ -58,14 +60,40 @@ export default function GalaxyScreen() {
   };
 
   const handleSectorSelect = (sector: Sector | null) => {
-    setSelectedSectorId(sector?.id || null);
+    if (isSwapMode && sector) {
+      if (!swapFirstSectorId) {
+        // First selection in swap mode
+        setSwapFirstSectorId(sector.id);
+        setSelectedSectorId(sector.id);
+      } else if (swapFirstSectorId !== sector.id) {
+        // Second selection - perform swap
+        dispatch(swapSectors({ sectorId1: swapFirstSectorId, sectorId2: sector.id }));
+        setIsSwapMode(false);
+        setSwapFirstSectorId(null);
+        setSelectedSectorId(null);
+      }
+    } else {
+      setSelectedSectorId(sector?.id || null);
+    }
   };
 
   const toggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
     if (!isSelectionMode) {
       setSelectedSectorId(null); // Clear selection when entering selection mode
+    } else {
+      // Exiting selection mode
+      setIsSwapMode(false);
+      setSwapFirstSectorId(null);
     }
+  };
+
+  const handlePan = (direction: 'up' | 'down' | 'left' | 'right') => {
+    hexGridRef.current?.pan(direction);
+  };
+
+  const handleCenterOnCurrent = () => {
+    hexGridRef.current?.centerOnCurrentSector();
   };
 
   const handleAddTile = () => {
@@ -141,18 +169,22 @@ export default function GalaxyScreen() {
   const handleSwapTile = () => {
     if (!selectedSectorId) return;
     
+    setIsSwapMode(true);
+    setSwapFirstSectorId(selectedSectorId);
+    
     Alert.alert(
-      'Swap Sectors',
-      'Select another sector to swap positions with.',
+      'Swap Mode',
+      'Now select another sector to swap positions with.',
       [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'OK',
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
           onPress: () => {
-            // TODO: Implement two-step selection for swapping
-            console.log('Swap mode not yet implemented');
+            setIsSwapMode(false);
+            setSwapFirstSectorId(null);
           }
-        }
+        },
+        { text: 'OK' }
       ]
     );
   };
@@ -357,12 +389,53 @@ export default function GalaxyScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Pan Controls */}
+        <View style={styles.panControls}>
+          <View style={styles.panControlsRow}>
+            <TouchableOpacity 
+              style={styles.panButton}
+              onPress={() => handlePan('up')}
+            >
+              <Ionicons name="chevron-up" size={20} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.panControlsRow}>
+            <TouchableOpacity 
+              style={styles.panButton}
+              onPress={() => handlePan('left')}
+            >
+              <Ionicons name="chevron-back" size={20} color="#007AFF" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.panButton, styles.centerButton]}
+              onPress={handleCenterOnCurrent}
+            >
+              <Ionicons name="locate" size={16} color="#007AFF" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.panButton}
+              onPress={() => handlePan('right')}
+            >
+              <Ionicons name="chevron-forward" size={20} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.panControlsRow}>
+            <TouchableOpacity 
+              style={styles.panButton}
+              onPress={() => handlePan('down')}
+            >
+              <Ionicons name="chevron-down" size={20} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={styles.hexGridWrapper}>
           <HexGrid
             ref={hexGridRef}
             sectors={sectorList}
             currentSectorId={currentSectorId}
             selectedSectorId={selectedSectorId}
+            swapFirstSectorId={swapFirstSectorId}
             onSectorPress={isSelectionMode ? undefined : handleHypersurf}
             onSectorSelect={isSelectionMode ? handleSectorSelect : undefined}
             containerWidth={screenData.width - 40}
@@ -376,33 +449,38 @@ export default function GalaxyScreen() {
         {isSelectionMode && selectedSectorId && (
           <View style={styles.tileControls}>
             <Text style={styles.tileControlsTitle}>
-              Selected: {sectors[selectedSectorId]?.name || 'Unknown'}
+              {isSwapMode && swapFirstSectorId 
+                ? `Swapping: ${sectors[swapFirstSectorId]?.name || 'Unknown'} - Select target`
+                : `Selected: ${sectors[selectedSectorId]?.name || 'Unknown'}`
+              }
             </Text>
             <View style={styles.tileControlsRow}>
               <TouchableOpacity 
-                style={[styles.tileButton, styles.addButton]}
-                onPress={handleAddTile}
+                style={[styles.tileButton, styles.addButton, isSwapMode && styles.disabledButton]}
+                onPress={isSwapMode ? undefined : handleAddTile}
+                disabled={isSwapMode}
               >
-                <Ionicons name="add-circle" size={20} color="white" />
-                <Text style={styles.tileButtonText}>Add Adjacent</Text>
+                <Ionicons name="add-circle" size={20} color={isSwapMode ? "#999" : "white"} />
+                <Text style={[styles.tileButtonText, isSwapMode && styles.disabledButtonText]}>Add Adjacent</Text>
               </TouchableOpacity>
               
               {selectedSectorId !== 'lanai' && ( // Don't allow deleting home sector
                 <TouchableOpacity 
-                  style={[styles.tileButton, styles.deleteButton]}
-                  onPress={handleDeleteTile}
+                  style={[styles.tileButton, styles.deleteButton, isSwapMode && styles.disabledButton]}
+                  onPress={isSwapMode ? undefined : handleDeleteTile}
+                  disabled={isSwapMode}
                 >
-                  <Ionicons name="trash" size={20} color="white" />
-                  <Text style={styles.tileButtonText}>Delete</Text>
+                  <Ionicons name="trash" size={20} color={isSwapMode ? "#999" : "white"} />
+                  <Text style={[styles.tileButtonText, isSwapMode && styles.disabledButtonText]}>Delete</Text>
                 </TouchableOpacity>
               )}
               
               <TouchableOpacity 
-                style={[styles.tileButton, styles.swapButton]}
+                style={[styles.tileButton, styles.swapButton, isSwapMode && styles.activeSwapButton]}
                 onPress={handleSwapTile}
               >
                 <Ionicons name="swap-horizontal" size={20} color="white" />
-                <Text style={styles.tileButtonText}>Swap</Text>
+                <Text style={styles.tileButtonText}>{isSwapMode ? 'Swapping...' : 'Swap'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -495,6 +573,36 @@ const styles = StyleSheet.create({
   },
   activeControlButton: {
     backgroundColor: '#007AFF',
+  },
+  panControls: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    marginTop: -60,
+    alignItems: 'center',
+    backgroundColor: 'rgba(248, 249, 250, 0.9)',
+    borderRadius: 8,
+    padding: 8,
+  },
+  panControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  panButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    margin: 2,
+  },
+  centerButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
   },
   zoomText: {
     fontSize: 12,
@@ -697,9 +805,18 @@ const styles = StyleSheet.create({
   swapButton: {
     backgroundColor: '#6F42C1',
   },
+  activeSwapButton: {
+    backgroundColor: '#5A2D91',
+  },
+  disabledButton: {
+    backgroundColor: '#E9ECEF',
+  },
   tileButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
+  },
+  disabledButtonText: {
+    color: '#999',
   },
 });
