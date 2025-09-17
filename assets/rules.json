@@ -1,0 +1,517 @@
+{
+  "how_to_play": {
+    "description": "Players describe their character\u2019s actions and declare the desired impact. The referee sets the difficulty and assesses the risk: big ambitions mean higher difficulty and risk. To resolve a risky, dangerous or uncertain action, roll a d20. If the result is equal to or higher than the difficulty, the action succeeds; otherwise it fails. A natural 20 is a Triumph, often granting a new knack related to the action; a natural 1 is a Catastrophe with major fallout. In parallel with every d20 roll, always roll a d6 to determine unintended side\u2011effects. Rolling 1\u20132 on this effect die produces a Snag (a negative complication) and increases the mission\u2019s Heat level by 1. Rolling 5\u20136 produces a Benefit (a positive side\u2011effect) regardless of success or failure.",
+    "gumption": "Characters start with a maximum of 3 Gumption. This measures their resolve rather than physical health. Running out of Gumption leaves a character at the mercy of their opponent.",
+    "heat_level": "Missions start at Heat 1 and can rise to a maximum of 20. Heat increases whenever a Snag is rolled. Higher heat makes negative consequences harsher. Heat resets between missions.",
+    "heat_effects": {
+      "1-5": "Minor annoyance (Meh)",
+      "6-10": "Inconvenient complication (Hrm\u2026)",
+      "11-15": "Painful consequence (Ouch!)",
+      "16-20": "Calamitous explosion (Oh NoOOoo\u2026)"
+    }
+  },
+  "determine_difficulty": {
+    "description": "The referee determines the difficulty of an action by considering the desired impact, the opposing creature\u2019s skill and any leverage the acting character possesses (careers, knacks, tools, etc.).",
+    "difficulties": {
+      "E": "Easy",
+      "J": "Tricky",
+      "O": "Hard",
+      "T": "Epic"
+    }
+  },
+  "scuffles": {
+    "description": "Scuffles range from dance\u2011offs to fist fights and take place in rounds. At the start of a round the referee gauges the situation and players roll to see how their characters fare.",
+    "positions": {
+      "in_a_tight_spot": "Roll two d6 and take the lower result.",
+      "evenly_matched": "Roll one d6.",
+      "high_ground": "Roll two d6 and take the higher result."
+    },
+    "results": {
+      "1-2": {
+        "situation": "Pinned down",
+        "effect": "The character is under heavy fire and may only defend."
+      },
+      "3-4": {
+        "situation": "Trading blows",
+        "effect": "The character is attacked. They may defend, take the hit and counter\u2011attack, or try to do both (with increased difficulty)."
+      },
+      "5-6": {
+        "situation": "In the clear",
+        "effect": "The character has the upper hand and may attack an opponent."
+      }
+    },
+    "resolution": "Players always roll for their characters, whether attacking or defending. Starting with the lowest result the referee describes the situation, the player states their response, the difficulty is set and a d20 roll determines success. Basic hits deal 1 harm, strong hits deal 2 harm and devastating hits deal 3 or more.",
+    "defeat": "The side that loses all Gumption or surrenders first is at the mercy of the victors."
+  },
+  "creating_opponents": {
+    "description": "Opponents are defined by Strength (Gumption and harm dealt) and Skill (the base difficulty to act against them and resist their actions). Choose or roll to determine these attributes.",
+    "strength": {
+      "1-3": {
+        "name": "Smol",
+        "gumption": 1,
+        "harm": 1
+      },
+      "4-5": {
+        "name": "Sturdy",
+        "gumption": 3,
+        "harm": 2
+      },
+      "6": {
+        "name": "Shredded",
+        "gumption": 6,
+        "harm": 3
+      }
+    },
+    "skill": {
+      "A-E": {
+        "name": "Inept",
+        "difficulty": "Easy"
+      },
+      "F-J": {
+        "name": "Capable",
+        "difficulty": "Tricky"
+      },
+      "K-O": {
+        "name": "Scary",
+        "difficulty": "Hard"
+      },
+      "P-T": {
+        "name": "Terrifying",
+        "difficulty": "Epic"
+      }
+    }
+  },
+  "delving": {
+    "description": "Delving is a push\u2011your\u2011luck mini\u2011game used for complex tasks like salvage, infiltration or escape. A delve has a goal, several levels to navigate, hazards and a group supply counter representing oxygen, morale or similar resources. Running out of supply causes damage to the crew\u2019s Gumption.",
+    "supply_levels": {
+      "unprepared": 2,
+      "prepared": 3,
+      "extra_prepared": 4
+    },
+    "wayfinding": {
+      "step1": "Choose a leader to make the wayfinding roll.",
+      "step2": "The leader rolls a d6 as many times as they wish, adding the results. Higher totals are better (6 is best); push too far and risk calamity.",
+      "step3": "Add the results and consult the outcome table. Handle any consequences before attempting the next level."
+    },
+    "results": {
+      "1-3": "Oof! Gain no levels, lose 1 supply and the leader suffers 1 harm.",
+      "4-5": "Ugh\u2026 Gain 1 level but lose 1 supply; the way is clear.",
+      "6": "Woohoo! Gain 1 level; the way is clear.",
+      "7+": "Oh no! Lose 1 supply and roll a hazard. Defeating the hazard gains 1 level."
+    },
+    "escaping": "To abandon a delve early, the crew must gain one more level on a wayfinding roll and deal with any resulting hazards before escaping."
+  },
+  "starship_shenanigans": {
+    "description": "Rules for constructing and operating starships. Every starship has a purpose (its intended role) and a personality (quirks, advantages and drawbacks). Purpose and personality influence the difficulty of starship actions and can modify ship statistics.",
+    "purposes": {
+      "1": "Industrial (mining, repair, salvage)",
+      "2": "Research (exploration, science, survey)",
+      "3": "Transportation (freighter, liner, courier)",
+      "4": "Private (yacht, hospitality, trade)",
+      "5": "Combat (military, policing, espionage)",
+      "6": "Support (medical, rescue, patrol)"
+    },
+    "sizes": {
+      "small": {
+        "shields": 2,
+        "hull": 2,
+        "drive_range": 2
+      },
+      "medium": {
+        "shields": 3,
+        "hull": 3,
+        "drive_range": 3
+      },
+      "large": {
+        "shields": 4,
+        "hull": 4,
+        "drive_range": 4
+      }
+    },
+    "personalities": {
+      "A": "Fastest in the galaxy \u2013 boosted engines but prone to overheating.",
+      "B": "Mind of its own \u2013 treat it well and it will help; cross it and beware.",
+      "C": "Turns on a space dime \u2013 highly manoeuvrable but lightly armed.",
+      "D": "It\u2019s alive \u2013 a living starship that still produces waste.",
+      "E": "Stuff of legend \u2013 famous in some places, infamous in others.",
+      "F": "Smuggler\u2019s special \u2013 a notorious past; pirates respect it.",
+      "G": "One of a kind \u2013 cutting\u2011edge prototype that\u2019s untested.",
+      "H": "Turtle power \u2013 incredibly tough but steers like a cow.",
+      "I": "More than meets the eye \u2013 heavily modified with illicit tech.",
+      "J": "Ol\u2019 reliable \u2013 built to last in the old style.",
+      "K": "Glass cannon \u2013 overpowered weapons but fragile.",
+      "L": "Hull only a mother could love \u2013 ugly but underestimated.",
+      "M": "Luxury model \u2013 posh and shiny but attracts pirates.",
+      "N": "Of alien origins \u2013 unknown tech and mysterious controls.",
+      "O": "Bucket\u2011o\u2011bolts \u2013 barely spaceworthy but easy to repair.",
+      "P": "Ancient relic \u2013 belongs in a museum yet still capable of surprises.",
+      "Q": "Bigger on the inside \u2013 cavernous interior but compromised design.",
+      "R": "Economy class \u2013 utterly plain but great for lying low.",
+      "S": "Engineer\u2019s baby \u2013 highly efficient and over\u2011engineered.",
+      "T": "Modular architecture \u2013 can break apart into smaller vessels."
+    }
+  },
+  "hypersurfing": {
+    "description": "Ships may travel between sectors by \u2018hypersurfing\u2019 along hyperwaves. A ship may move a number of hexes equal to its drive range at a rate of twenty\u2011four hours per hex. After hypersurfing, hypercrystals take another twenty\u2011four hours to recharge. During this downtime the crew is vulnerable to encounters.",
+    "arrival_results": {
+      "1-3": "Bumpy ride \u2013 take 1 shield damage and roll for an encounter.",
+      "4-5": "Something on sensors \u2013 an encounter awaits.",
+      "6": "Smooth sailing \u2013 no incident.",
+      "7+": "Wipe\u2011out! Take 1 hull damage and roll for an encounter."
+    },
+    "locations": {
+      "sector": "When travelling within a sector, roll on the local Sensors Detect table if available. Some sectors trigger big adventures when appropriate.",
+      "deep_space": "Between sectors, the referee may roll on the Deep Space Encounters table to see what the crew runs into."
+    },
+    "scanning": "On arrival the referee reads aloud the location\u2019s guidebook entry and scan information. This is usually the crew\u2019s initial knowledge. Then, roll on the location\u2019s What\u2019s Happening table to see what is occurring on the surface or in orbit."
+  },
+  "starship_scuffles": {
+    "description": "Starship scuffles are structured similarly to regular scuffles but with the ship taking the role of a character.",
+    "phases": {
+      "red_alert": "Each player declares which starship station their character operates: Engineering, Helm, Operations or Tactical. A character may run multiple stations at higher difficulty or share a station with another to make it easier.",
+      "make_it_so": "At the start of each round, the referee determines the situation for the ship. On attack the crew may take one action per player and each station may be used once. On defence enemy ships act based on size (small ships take one action, medium two, large three). The players at the relevant station may attempt to resist each enemy action.",
+      "damage_report": "Damage first depletes shields; after shields are gone, hull points are lost. If hull points reach zero the ship is disabled and adrift. Each time the ship takes hull damage, roll a d20 and a d6 to determine additional consequences. The die roll identifies which station and system is affected: A\u2011E Helm/Propulsion, F\u2011J Engineering/Power, K\u2011O Operations/Sensors, P\u2011T Tactical/Weapons. A d6 roll of 1 causes an explosion that renders the station inoperable until repaired; 2\u20133 causes a fritz, making the station harder to operate; 4\u20136 causes an overload, inflicting harm on the character(s) at that station. Hull damage requires a proper facility to repair."
+    }
+  },
+  "situation_dice": {
+    "description": "Situation dice help generate events when the crew enter a new area or need inspiration for what happens next. The referee may roll on the following table or choose a result.",
+    "results": {
+      "A-E": "Red Alert! \u2013 an immediate emergency.",
+      "F-J": "Sensors Detect\u2026 \u2013 a hint of what lies ahead.",
+      "K-O": "Some Kind Of\u2026 \u2013 an interesting discovery.",
+      "P-T": "We Are Being Hailed\u2026 \u2013 meeting new people."
+    }
+  },
+  "missions": {
+    "description": "To build a reputation for their Space Aces franchise the crew must undertake missions and perform heroic deeds. Missions may be generated by job postings at Starbase 42 or created from scratch by the referee.",
+    "creating_missions": "A mission has a client, objectives and potential complications. When the crew completes a mission they are awarded a star rating based on how many objectives they fulfil."
+  },
+  "star_ratings": {
+    "description": "After completing a mission or performing a heroic deed, the client rates the crew from one to three stars. This star rating influences the crew\u2019s galactic fame and their ability to sway authorities or influence events.",
+    "ratings": {
+      "one_star": "Few objectives completed; negligible fame gain.",
+      "two_stars": "Several objectives completed; respectable fame gain.",
+      "three_stars": "All objectives completed; significant fame gain."
+    }
+  },
+  "asking_starry": {
+    "description": "When the answer to a question is uncertain the referee can consult the artificial intelligence \u2018Starry\u2019, an all\u2011knowing but possibly malevolent assistant.",
+    "procedure": "Ask a yes\u2011or\u2011no question and decide the likelihood that the answer is \u2018yes\u2019. Roll a d20 (or use the effect die) following the standard procedure; results above the set threshold indicate \u2018yes\u2019, below indicate \u2018no\u2019. The referee interprets the answer in context."
+  },
+  "running_the_game": {
+    "description": "Space Aces is a player\u2011driven sandbox. Players set their own goals and drive the story by acting in the galaxy. The referee reacts to their choices, using the provided tools and tables to keep the story moving and inject whimsy, danger and wonder.",
+    "tone": "The setting is light\u2011hearted yet perilous. Violence is possible but non\u2011lethal options, humour and ingenuity are usually more rewarding.",
+    "guidance": "Referees are encouraged to discover the galaxy alongside their players rather than preparing everything in advance. The location write\u2011ups and adventure hooks are meant to inspire and leave plenty of space for personal invention."
+  },
+  "galaxy_setup": {
+    "description": "Shuffle the sector hex cards and lay them out to form a galaxy, ensuring the Lanai sector (home to Starbase 42) is near the centre. Distribute populated sectors, empty sectors and anomalies to create variety.",
+    "starting_point": "The campaign typically begins at Starbase 42 in the Lanai sector, where the crew establish their office. Clients hire them for missions; they gather their gear, attempt to complete the job and return to collect their reward and grow their fame."
+  },
+  "gameplay_loop": {
+    "description": "The typical game loop consists of accepting a mission, preparing and equipping the crew, travelling to the mission site, overcoming obstacles, completing objectives, returning to base and then spending rewards on upgrades or downtime before the next job."
+  },
+  "character_generation": {
+    "careers": {
+      "1-2": {
+        "A": "Retired cat burglar",
+        "B": "Psionic barista",
+        "C": "Bionic B\u2011boy",
+        "D": "Burned super spy",
+        "E": "Wildstar wrangler",
+        "F": "Veteran AstroMall cop",
+        "G": "Fired novaball star",
+        "H": "Holographic food critic",
+        "I": "Notorious net hacker",
+        "J": "Disgraced starcheologist",
+        "K": "Radioactive rocket racer",
+        "L": "Extreme sun diver",
+        "M": "Xeno veterinarian",
+        "N": "Marooned chrononaut",
+        "O": "Scoundrel solar sailor",
+        "P": "Notorious starchitect",
+        "Q": "Questing knight\u2011errant",
+        "R": "Plucky kid detective",
+        "S": "Galactic getaway driver",
+        "T": "Interstellar lifeguard"
+      },
+      "3-4": {
+        "A": "Cosmic luchador",
+        "B": "Renegade roboticist",
+        "C": "Wanted galactic grifter",
+        "D": "Nova rock star",
+        "E": "Hyperwave surfer",
+        "F": "Maverick mechajockey",
+        "G": "Mysterious space hermit",
+        "H": "Luxury starcruiser butler",
+        "I": "Star hulk salvager",
+        "J": "Hoverbike hooligan",
+        "K": "Crash test clone",
+        "L": "Redshirt for hire",
+        "M": "Empathic beast master",
+        "N": "Pizza delivery ninja",
+        "O": "Ultraneon graffiti artist",
+        "P": "Deep space fisherman",
+        "Q": "Darkstar smuggler",
+        "R": "Deposed AI overlord",
+        "S": "Lonestar ranger",
+        "T": "Temporal teamaster"
+      },
+      "5-6": {
+        "A": "Startrotting astrohippie",
+        "B": "Spacefaring fashionista",
+        "C": "Exiled omnipotent entity",
+        "D": "Interdimensional pickpocket",
+        "E": "Cosmic insurance salesman",
+        "F": "Anomalous echo investigator",
+        "G": "Black market xeno botanist",
+        "H": "Experimental gastronomer",
+        "I": "Battle\u2011hardened janitor",
+        "J": "Brain\u2011in\u2011a\u2011jar vigilante",
+        "K": "Mutated mad scientist",
+        "L": "Genemodded geneticist",
+        "M": "Three raccoons in a mech suit",
+        "N": "Solar starchild avatar",
+        "O": "Eternally overlooked ensign",
+        "P": "Wandering space ronin",
+        "Q": "Escaped secret experiment",
+        "R": "Daring spacefari guide",
+        "S": "Radbarnacle exterminator",
+        "T": "Holostar celebrity influencer"
+      }
+    },
+    "towel_materials": {
+      "1": "Space spider gossamer silk",
+      "2": "Nanitic nylon polymer",
+      "3": "Merino bugalope wool",
+      "4": "Cosmic cotton blend",
+      "5": "Experimental elastic",
+      "6": "Extra\u2011plush pibble fur"
+    },
+    "towel_features": {
+      "A": "Solar\u2011powered panelling",
+      "B": "Oxygen\u2011generating algae",
+      "C": "Nutritional vitamin piping",
+      "D": "Danger\u2011sensing dye",
+      "E": "Tranquilising taffeta",
+      "F": "Lie\u2011detecting lattice",
+      "G": "Concealed tiny tools",
+      "H": "Indestructible weave",
+      "I": "Anti\u2011gravity tufting",
+      "J": "Low\u2011level sentience",
+      "K": "Glow\u2011in\u2011the\u2011dark threads",
+      "L": "Multidimensionally foldable",
+      "M": "Mind\u2011melding meshwork",
+      "N": "Emergency beacon bunting",
+      "O": "Programmable pattern",
+      "P": "Static electric stun bedazzling",
+      "Q": "Heal\u2011O\u2011Matic microfibres",
+      "R": "Laser\u2011repellent skein",
+      "S": "Data\u2011storage filigree",
+      "T": "Doubles as a snuggy"
+    },
+    "knacks": {
+      "A": [
+        "Hulking out",
+        "Thick\u2011skinned",
+        "Street tough"
+      ],
+      "B": [
+        "High\u2011G muscles",
+        "Obscure trivia",
+        "Extreme juggling"
+      ],
+      "C": [
+        "Interpretive dance",
+        "Holographic memory",
+        "Walking lie detector"
+      ],
+      "D": [
+        "Space jazz",
+        "Competitive baking",
+        "Percussive maintenance"
+      ],
+      "E": [
+        "Hoopy frood",
+        "Blowing stuff up",
+        "Lightning\u2011fast reflexes"
+      ],
+      "F": [
+        "Avoiding blame",
+        "Finding trouble",
+        "100\u2011yard dash"
+      ],
+      "G": [
+        "Poker face",
+        "High\u2011speed inventing",
+        "Calm as a coolcumber"
+      ],
+      "H": [
+        "Winning smile",
+        "Convenient excuses",
+        "Inspiring speeches"
+      ],
+      "I": [
+        "Distractions",
+        "Impersonations",
+        "Incredibly flexible"
+      ],
+      "J": [
+        "Space smarts",
+        "A way with animals",
+        "Raised by space wolves"
+      ],
+      "K": [
+        "Escape artist",
+        "Math prodigy",
+        "Sense of direction"
+      ],
+      "L": [
+        "Street magic",
+        "Scathing retorts",
+        "Wheeling & dealing"
+      ],
+      "M": [
+        "Derring\u2011do",
+        "Sticky fingers",
+        "Cute as a button"
+      ],
+      "N": [
+        "Trick shots",
+        "Nerves of steel",
+        "Solving sudoku puzzles"
+      ],
+      "O": [
+        "Taking a hit",
+        "Friend to birds",
+        "Tech whisperer"
+      ],
+      "P": [
+        "Iron stomach",
+        "Hunt\u2019n & track\u2019n",
+        "Smouldering intensity"
+      ],
+      "Q": [
+        "Trendsetting",
+        "Kinda telekinetic",
+        "Wrong place, right time"
+      ],
+      "R": [
+        "Perfect pitch",
+        "Sorta telepathic",
+        "Slightly magnetic"
+      ],
+      "S": [
+        "Super sniffer",
+        "Ear for languages",
+        "Landing on your feet"
+      ],
+      "T": [
+        "Bushcrafting",
+        "Zero\u2011G parkour",
+        "A certain \u2018je ne sais quoi\u2019"
+      ]
+    },
+    "quests": {
+      "A": [
+        "Repay a life debt",
+        "Fight for the little guys",
+        "Finish your community service"
+      ],
+      "B": [
+        "Search for lost family",
+        "Cure your brain parasite",
+        "Relive the glory days"
+      ],
+      "C": [
+        "Hunt a \u2018white whale\u2019",
+        "Save the galaxy",
+        "Find the rest of your kind"
+      ],
+      "D": [
+        "Revenge a betrayal",
+        "Stick it to \u2018The Man\u2019",
+        "Prove the universe is flat"
+      ],
+      "E": [
+        "Avenge an injustice",
+        "Achieve immortality",
+        "Plan the ultimate heist"
+      ],
+      "F": [
+        "Achieve fame & fortune",
+        "Restore family honour",
+        "Outdo your arch\u2011nemesis"
+      ],
+      "G": [
+        "Clear your name",
+        "Taste all the foods",
+        "Be a finger in the eye of evil"
+      ],
+      "H": [
+        "Earn redemption",
+        "Find true happiness",
+        "Fund a start\u2011up business"
+      ],
+      "I": [
+        "Find your true identity",
+        "Rewrite history",
+        "Write the greatest holonovel"
+      ],
+      "J": [
+        "Rescue a loved one",
+        "Find true love",
+        "Earn all the merit badges"
+      ],
+      "K": [
+        "Liberate your people",
+        "Collect cool souvenirs",
+        "Tick off bucket list items"
+      ],
+      "L": [
+        "Seek out new life",
+        "Gotta catch them all",
+        "Recover lost fortune"
+      ],
+      "M": [
+        "Impress your parents",
+        "Make new friends",
+        "Avoid responsibilities"
+      ],
+      "N": [
+        "Repay the loan sharks",
+        "Spread peace & joy",
+        "Witness true beauty"
+      ],
+      "O": [
+        "Answer destiny\u2019s call",
+        "Stop a great evil",
+        "Overcome your fears"
+      ],
+      "P": [
+        "Chronic hero complex",
+        "Prove your strength",
+        "Become eternal emperor"
+      ],
+      "Q": [
+        "Win back a lost love",
+        "Unlock your true power",
+        "Answer the ultimate question"
+      ],
+      "R": [
+        "Live up to a legacy",
+        "Finish your doctorate",
+        "Become one with the universe"
+      ],
+      "S": [
+        "Discover a lost treasure",
+        "Feel real emotions",
+        "Get InfraRed Bull sponsorship"
+      ],
+      "T": [
+        "Retake your kingdom",
+        "Help a lost cause",
+        "Insult every living being"
+      ]
+    }
+  }
+}
