@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,8 @@ import { RootState } from '../store';
 import { moveTo, discoverSector } from '../store/slices/sectorsSlice';
 import { logQuickEvent } from '../store/slices/logEntriesSlice';
 import { LogEntryType, Sector, SectorType } from '../types';
+import HexGrid from '../components/HexGrid';
+import HexTile from '../components/HexTile';
 
 export default function GalaxyScreen() {
   const dispatch = useDispatch();
@@ -23,6 +26,15 @@ export default function GalaxyScreen() {
   const currentSessionId = useSelector((state: RootState) => state.sessions.currentSessionId);
   
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [screenData, setScreenData] = useState(Dimensions.get('window'));
+
+  useLayoutEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenData(window);
+    });
+    return subscription?.remove;
+  }, []);
   
   const sectorList = Object.values(sectors).sort((a, b) => {
     // Sort by discovered first, then by distance from origin
@@ -254,8 +266,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1a1a1a',
   },
+  headerControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   headerStats: {
     alignItems: 'flex-end',
+  },
+  viewModeButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  activeViewMode: {
+    backgroundColor: '#007AFF',
   },
   section: {
     paddingHorizontal: 20,
@@ -266,6 +291,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 12,
+  },
+  hexRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   hexGrid: {
     flexDirection: 'row',
