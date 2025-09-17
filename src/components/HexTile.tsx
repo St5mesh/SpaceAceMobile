@@ -15,6 +15,7 @@ interface HexTileProps {
   sector: Sector;
   size: number;
   isCurrentSector: boolean;
+  isSelected?: boolean;
   onPress: (sector: Sector) => void;
   showCoordinates?: boolean;
 }
@@ -23,6 +24,7 @@ const HexTile: React.FC<HexTileProps> = ({
   sector,
   size,
   isCurrentSector,
+  isSelected = false,
   onPress,
   showCoordinates = false,
 }) => {
@@ -87,6 +89,7 @@ const HexTile: React.FC<HexTileProps> = ({
 
   const getBorderColor = () => {
     if (isCurrentSector) return '#007AFF';
+    if (isSelected) return '#FF6B35';
     if (sector.isDangerous) return '#DC3545';
     
     switch (sector.type) {
@@ -111,7 +114,7 @@ const HexTile: React.FC<HexTileProps> = ({
 
   const overlayStyle = {
     ...hexStyle,
-    borderWidth: isCurrentSector ? 3 : 2,
+    borderWidth: isCurrentSector ? 3 : isSelected ? 3 : 2,
     borderColor: getBorderColor(),
   };
 
@@ -133,6 +136,13 @@ const HexTile: React.FC<HexTileProps> = ({
           {isCurrentSector && (
             <View style={styles.currentIndicator}>
               <Ionicons name="location" size={size * 0.15} color="white" />
+            </View>
+          )}
+          
+          {/* Selected sector indicator */}
+          {isSelected && !isCurrentSector && (
+            <View style={styles.selectedIndicator}>
+              <Ionicons name="checkmark-circle" size={size * 0.15} color="white" />
             </View>
           )}
           
@@ -206,6 +216,14 @@ const styles = StyleSheet.create({
     top: 4,
     right: 4,
     backgroundColor: '#007AFF',
+    borderRadius: 12,
+    padding: 2,
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#FF6B35',
     borderRadius: 12,
     padding: 2,
   },

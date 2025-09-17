@@ -149,6 +149,59 @@ const sectorsSlice = createSlice({
       }
     },
     
+    // Add a new sector at specified coordinates
+    addSectorAtPosition: (state, action: PayloadAction<{ hexQ: number; hexR: number; sectorData?: Partial<Sector> }>) => {
+      const { hexQ, hexR, sectorData } = action.payload;
+      const now = new Date();
+      
+      // Check if position is already occupied
+      const existingSector = Object.values(state.sectors).find(s => s.hexQ === hexQ && s.hexR === hexR);
+      if (existingSector) return; // Position already occupied
+      
+      // Generate a unique ID
+      const id = Date.now().toString() + Math.random().toString(36);
+      
+      // Create new sector with default or provided data
+      const newSector: Sector = {
+        id,
+        hexQ,
+        hexR,
+        name: sectorData?.name || 'New Sector',
+        type: sectorData?.type || SectorType.FRONTIER,
+        discoveredAt: new Date(),
+        notes: sectorData?.notes || 'A newly discovered sector',
+        linkedEncounterIds: [],
+        linkedMissionIds: [],
+        isDangerous: sectorData?.isDangerous || false,
+        createdAt: now,
+        updatedAt: now,
+        ...sectorData,
+      };
+      
+      state.sectors[id] = newSector;
+    },
+    
+    // Swap two sectors' positions
+    swapSectors: (state, action: PayloadAction<{ sectorId1: UUID; sectorId2: UUID }>) => {
+      const { sectorId1, sectorId2 } = action.payload;
+      const sector1 = state.sectors[sectorId1];
+      const sector2 = state.sectors[sectorId2];
+      
+      if (!sector1 || !sector2) return;
+      
+      // Swap coordinates
+      const tempQ = sector1.hexQ;
+      const tempR = sector1.hexR;
+      
+      sector1.hexQ = sector2.hexQ;
+      sector1.hexR = sector2.hexR;
+      sector1.updatedAt = new Date();
+      
+      sector2.hexQ = tempQ;
+      sector2.hexR = tempR;
+      sector2.updatedAt = new Date();
+    },
+    
     // Initialize a proper galaxy using the hex card assets
     initializeGalaxy: (state) => {
       const now = new Date();
@@ -242,6 +295,8 @@ export const {
   linkEncounter,
   linkMission,
   deleteSector,
+  addSectorAtPosition,
+  swapSectors,
   initializeGalaxy,
 } = sectorsSlice.actions;
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useImperativeHandle } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,27 +13,46 @@ import HexTile from './HexTile';
 interface HexGridProps {
   sectors: Sector[];
   currentSectorId?: string;
-  onSectorPress: (sector: Sector) => void;
+  selectedSectorId?: string | null;
+  onSectorPress?: (sector: Sector) => void;
+  onSectorSelect?: (sector: Sector | null) => void;
   containerWidth: number;
   containerHeight: number;
   initialScale?: number;
   onZoomChange?: (scale: number) => void;
 }
 
-const HexGrid: React.FC<HexGridProps> = ({
+const HexGrid = React.forwardRef<any, HexGridProps>(({
   sectors,
   currentSectorId,
+  selectedSectorId,
   onSectorPress,
+  onSectorSelect,
   containerWidth,
   containerHeight,
   initialScale = 1,
   onZoomChange,
-}) => {
+}, ref) => {
   const [scale, setScale] = useState(initialScale);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const baseHexSize = 80;
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    zoomIn: () => {
+      const newScale = Math.min(scale * 1.2, 4.0);
+      setScale(newScale);
+      onZoomChange?.(newScale);
+    },
+    zoomOut: () => {
+      const newScale = Math.max(scale / 1.2, 0.3);
+      setScale(newScale);
+      onZoomChange?.(newScale);
+    },
+    centerOnCurrentSector,
+  }));
 
   // Handle zoom changes from ScrollView
   const handleZoom = useCallback((event: any) => {
@@ -64,6 +83,20 @@ const HexGrid: React.FC<HexGridProps> = ({
       animated: true,
     });
   }, [currentSectorId, sectors, scale, containerWidth, containerHeight]);
+
+  const handleSectorPress = useCallback((sector: Sector) => {
+    // If selecting is enabled, handle selection
+    if (onSectorSelect) {
+      if (selectedSectorId === sector.id) {
+        onSectorSelect(null); // Deselect if already selected
+      } else {
+        onSectorSelect(sector);
+      }
+    } else if (onSectorPress) {
+      // Default behavior - navigate to sector
+      onSectorPress(sector);
+    }
+  }, [selectedSectorId, onSectorSelect, onSectorPress]);
 
   // Calculate hex positions
   const getHexLayout = () => {
@@ -124,7 +157,6 @@ const HexGrid: React.FC<HexGridProps> = ({
         minimumZoomScale={0.3}
         maximumZoomScale={4.0}
         zoomScale={scale}
-        onZoomEnd={handleZoom}
         centerContent={true}
         decelerationRate="normal"
       >
@@ -144,7 +176,8 @@ const HexGrid: React.FC<HexGridProps> = ({
                 sector={sector}
                 size={size}
                 isCurrentSector={sector.id === currentSectorId}
-                onPress={onSectorPress}
+                isSelected={sector.id === selectedSectorId}
+                onPress={handleSectorPress}
                 showCoordinates={scale > 1.5}
               />
             </View>
@@ -153,7 +186,7 @@ const HexGrid: React.FC<HexGridProps> = ({
       </ScrollView>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

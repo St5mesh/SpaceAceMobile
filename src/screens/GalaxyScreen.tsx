@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,16 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootState } from '../store';
-import { moveTo, discoverSector, discoverAdjacentSectors } from '../store/slices/sectorsSlice';
+import { moveTo, discoverSector, discoverAdjacentSectors, deleteSector, addSectorAtPosition, swapSectors } from '../store/slices/sectorsSlice';
 import { logQuickEvent } from '../store/slices/logEntriesSlice';
 import { LogEntryType, Sector, SectorType } from '../types';
+import { HexUtils } from '../utils/hexUtils';
 import HexGrid from '../components/HexGrid';
 import HexTile from '../components/HexTile';
 
@@ -29,6 +31,8 @@ export default function GalaxyScreen() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
   const [currentZoom, setCurrentZoom] = useState(1.0);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const hexGridRef = useRef<any>(null);
 
   useLayoutEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -39,6 +43,118 @@ export default function GalaxyScreen() {
 
   const handleZoomChange = (scale: number) => {
     setCurrentZoom(scale);
+  };
+
+  const handleZoomIn = () => {
+    const newZoom = Math.min(currentZoom * 1.2, 4.0);
+    hexGridRef.current?.zoomIn();
+    setCurrentZoom(newZoom);
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(currentZoom / 1.2, 0.3);
+    hexGridRef.current?.zoomOut();
+    setCurrentZoom(newZoom);
+  };
+
+  const handleSectorSelect = (sector: Sector | null) => {
+    setSelectedSectorId(sector?.id || null);
+  };
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (!isSelectionMode) {
+      setSelectedSectorId(null); // Clear selection when entering selection mode
+    }
+  };
+
+  const handleAddTile = () => {
+    if (!selectedSectorId) return;
+    
+    const selectedSector = sectors[selectedSectorId];
+    if (!selectedSector) return;
+    
+    // Get adjacent positions
+    const neighbors = HexUtils.hexNeighbors({
+      q: selectedSector.hexQ,
+      r: selectedSector.hexR
+    });
+    
+    // Find empty adjacent positions
+    const emptyPositions = neighbors.filter(pos => 
+      !Object.values(sectors).some(s => s.hexQ === pos.q && s.hexR === pos.r)
+    );
+    
+    if (emptyPositions.length === 0) {
+      Alert.alert('No Space', 'No empty adjacent positions available.');
+      return;
+    }
+    
+    // For now, use the first empty position
+    const targetPos = emptyPositions[0];
+    
+    Alert.alert(
+      'Add New Sector',
+      `Add a new sector at coordinates (${targetPos.q}, ${targetPos.r})?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Add',
+          onPress: () => {
+            dispatch(addSectorAtPosition({
+              hexQ: targetPos.q,
+              hexR: targetPos.r,
+              sectorData: {
+                name: `Sector ${targetPos.q},${targetPos.r}`,
+                type: SectorType.FRONTIER,
+              }
+            }));
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteTile = () => {
+    if (!selectedSectorId || selectedSectorId === 'lanai') return;
+    
+    const selectedSector = sectors[selectedSectorId];
+    if (!selectedSector) return;
+    
+    Alert.alert(
+      'Delete Sector',
+      `Are you sure you want to delete "${selectedSector.name}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(deleteSector(selectedSectorId));
+            setSelectedSectorId(null);
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSwapTile = () => {
+    if (!selectedSectorId) return;
+    
+    Alert.alert(
+      'Swap Sectors',
+      'Select another sector to swap positions with.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: () => {
+            // TODO: Implement two-step selection for swapping
+            console.log('Swap mode not yet implemented');
+          }
+        }
+      ]
+    );
   };
   
   const sectorList = Object.values(sectors).sort((a, b) => {
@@ -215,23 +331,82 @@ export default function GalaxyScreen() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Galaxy Hex Map</Text>
-          <View style={styles.zoomControls}>
-            <Text style={styles.zoomText}>
-              Zoom: {(currentZoom * 100).toFixed(0)}%
-            </Text>
+          <View style={styles.mapControls}>
+            <View style={styles.zoomControls}>
+              <TouchableOpacity 
+                style={styles.controlButton}
+                onPress={handleZoomOut}
+              >
+                <Ionicons name="remove" size={20} color="#007AFF" />
+              </TouchableOpacity>
+              <Text style={styles.zoomText}>
+                {(currentZoom * 100).toFixed(0)}%
+              </Text>
+              <TouchableOpacity 
+                style={styles.controlButton}
+                onPress={handleZoomIn}
+              >
+                <Ionicons name="add" size={20} color="#007AFF" />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity 
+              style={[styles.controlButton, isSelectionMode && styles.activeControlButton]}
+              onPress={toggleSelectionMode}
+            >
+              <Ionicons name="hand-left" size={20} color={isSelectionMode ? "white" : "#007AFF"} />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.hexGridWrapper}>
           <HexGrid
+            ref={hexGridRef}
             sectors={sectorList}
             currentSectorId={currentSectorId}
-            onSectorPress={handleHypersurf}
+            selectedSectorId={selectedSectorId}
+            onSectorPress={isSelectionMode ? undefined : handleHypersurf}
+            onSectorSelect={isSelectionMode ? handleSectorSelect : undefined}
             containerWidth={screenData.width - 40}
             containerHeight={300}
             initialScale={1.0}
             onZoomChange={handleZoomChange}
           />
         </View>
+
+        {/* Tile Manipulation Controls */}
+        {isSelectionMode && selectedSectorId && (
+          <View style={styles.tileControls}>
+            <Text style={styles.tileControlsTitle}>
+              Selected: {sectors[selectedSectorId]?.name || 'Unknown'}
+            </Text>
+            <View style={styles.tileControlsRow}>
+              <TouchableOpacity 
+                style={[styles.tileButton, styles.addButton]}
+                onPress={handleAddTile}
+              >
+                <Ionicons name="add-circle" size={20} color="white" />
+                <Text style={styles.tileButtonText}>Add Adjacent</Text>
+              </TouchableOpacity>
+              
+              {selectedSectorId !== 'lanai' && ( // Don't allow deleting home sector
+                <TouchableOpacity 
+                  style={[styles.tileButton, styles.deleteButton]}
+                  onPress={handleDeleteTile}
+                >
+                  <Ionicons name="trash" size={20} color="white" />
+                  <Text style={styles.tileButtonText}>Delete</Text>
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity 
+                style={[styles.tileButton, styles.swapButton]}
+                onPress={handleSwapTile}
+              >
+                <Ionicons name="swap-horizontal" size={20} color="white" />
+                <Text style={styles.tileButtonText}>Swap</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Sector List */}
@@ -298,10 +473,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  mapControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   zoomControls: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  controlButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  activeControlButton: {
+    backgroundColor: '#007AFF',
   },
   zoomText: {
     fontSize: 12,
@@ -464,5 +657,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
+  },
+  tileControls: {
+    backgroundColor: 'white',
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tileControlsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  tileControlsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tileButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  addButton: {
+    backgroundColor: '#28A745',
+  },
+  deleteButton: {
+    backgroundColor: '#DC3545',
+  },
+  swapButton: {
+    backgroundColor: '#6F42C1',
+  },
+  tileButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
