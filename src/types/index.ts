@@ -42,12 +42,20 @@ export enum SectorType {
 export interface Character {
   id: UUID;
   name: string;
-  species: string;
   career: string;
-  notes: string;
-  fame: number;
-  sway: number;
-  heat: number;
+  knacks: string;
+  drive: string;
+  gumption: {
+    current: number;
+    maximum: number;
+  };
+  catchphrase: string;
+  // Legacy fields - keeping for backward compatibility
+  species?: string;
+  notes?: string;
+  fame?: number;
+  sway?: number;
+  heat?: number;
   tags: string[];
   inventory: InventoryItem[];
   createdAt: Date;
