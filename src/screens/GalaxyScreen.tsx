@@ -390,6 +390,13 @@ export default function GalaxyScreen() {
           </View>
         </View>
 
+        {/* Selection mode instruction */}
+        {!isSelectionMode && (
+          <Text style={styles.instructionText}>
+            Tap the hand icon to enable selection mode for sector manipulation
+          </Text>
+        )}
+
         {/* Pan Controls */}
         <View style={styles.panControls}>
           <View style={styles.panControlsRow}>
@@ -438,7 +445,7 @@ export default function GalaxyScreen() {
             swapFirstSectorId={swapFirstSectorId}
             onSectorPress={isSelectionMode ? undefined : handleHypersurf}
             onSectorSelect={isSelectionMode ? handleSectorSelect : undefined}
-            containerWidth={screenData.width - 40}
+            containerWidth={screenData.width - 120} // Account for pan controls (80px) + padding (40px)
             containerHeight={300}
             initialScale={1.0}
             onZoomChange={handleZoomChange}
@@ -576,38 +583,52 @@ const styles = StyleSheet.create({
   },
   panControls: {
     position: 'absolute',
-    right: 16,
+    right: 8,
     top: '50%',
     marginTop: -60,
     alignItems: 'center',
-    backgroundColor: 'rgba(248, 249, 250, 0.9)',
+    backgroundColor: 'rgba(248, 249, 250, 0.95)',
     borderRadius: 8,
-    padding: 8,
+    padding: 6,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    zIndex: 10,
   },
   panControlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   panButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#007AFF',
-    margin: 2,
+    margin: 1,
   },
   centerButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   zoomText: {
     fontSize: 12,
     color: '#666',
     fontWeight: '500',
+  },
+  instructionText: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 16,
   },
   hexGridWrapper: {
     backgroundColor: '#000011',
@@ -785,16 +806,17 @@ const styles = StyleSheet.create({
   },
   tileControlsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6, // Reduce gap for mobile
   },
   tileButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column', // Stack icon and text vertically for mobile
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
-    gap: 6,
+    gap: 4,
+    minHeight: 56, // Ensure touch target is adequate
   },
   addButton: {
     backgroundColor: '#28A745',
