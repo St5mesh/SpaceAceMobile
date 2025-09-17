@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Sector, UUID, SectorType } from '../../types';
+import { HexUtils } from '../../utils/hexUtils';
+import { getSectorAsset, getAllSectorNames, getRandomSector } from '../../data/sectorAssets';
 
 interface SectorsState {
   sectors: Record<UUID, Sector>;
@@ -81,18 +83,20 @@ const sectorsSlice = createSlice({
       }
     },
     
-    // Initialize some basic sectors for demo
+    // Initialize a proper galaxy using the hex card assets
     initializeGalaxy: (state) => {
       const now = new Date();
-      // Create a small starting galaxy with home sector and a few neighbors
+      
+      // Start with Lanai as the home system (Starbase 42)
+      const lanaiAsset = getSectorAsset('lanai');
       const homeSector: Sector = {
-        id: 'home-sector',
+        id: 'lanai',
         hexQ: 0,
         hexR: 0,
-        name: 'Home System',
-        type: SectorType.CIVILIZED,
+        name: 'Lanai',
+        type: lanaiAsset?.type || SectorType.CIVILIZED,
         discoveredAt: now,
-        notes: 'Your starting location in civilized space.',
+        notes: lanaiAsset?.description || 'Home of Starbase 42. Your starting location.',
         linkedEncounterIds: [],
         linkedMissionIds: [],
         isDangerous: false,
@@ -100,48 +104,64 @@ const sectorsSlice = createSlice({
         updatedAt: now,
       };
       
-      const sectors = [
-        homeSector,
-        {
-          ...homeSector,
-          id: 'frontier-1',
-          hexQ: 1,
-          hexR: 0,
-          name: 'Frontier Outpost',
-          type: SectorType.FRONTIER,
-          discoveredAt: undefined,
-          notes: 'A frontier sector waiting to be explored.',
-          isDangerous: false,
-        },
-        {
-          ...homeSector,
-          id: 'dangerous-1',
-          hexQ: 0,
-          hexR: 1,
-          name: 'Pirate Haven',
-          type: SectorType.DANGEROUS,
-          discoveredAt: undefined,
-          notes: 'Reports suggest dangerous activity in this sector.',
-          isDangerous: true,
-        },
-        {
-          ...homeSector,
-          id: 'unknown-1',
-          hexQ: -1,
-          hexR: 0,
-          name: 'Unknown Space',
-          type: SectorType.UNKNOWN,
-          discoveredAt: undefined,
-          notes: '',
-          isDangerous: false,
-        },
-      ];
+      // Create a galaxy layout using hex coordinates
+      const galaxySectors: Sector[] = [homeSector];
+      const usedCoordinates = new Set(['0,0']);
+      const sectorNames = getAllSectorNames().filter(name => name !== 'lanai');
       
-      sectors.forEach(sector => {
+      // Generate sectors in expanding rings around Lanai
+      for (let ring = 1; ring <= 4; ring++) {
+        const ringHexes = HexUtils.hexRing({ q: 0, r: 0 }, ring);
+        
+        // Don't fill every position - create some empty space
+        const sectorsInThisRing = Math.min(ringHexes.length, Math.floor(sectorNames.length / ring));
+        const selectedHexes = ringHexes.slice(0, sectorsInThisRing);
+        
+        selectedHexes.forEach((hex, index) => {
+          const coordKey = `${hex.q},${hex.r}`;
+          if (usedCoordinates.has(coordKey)) return;
+          
+          // Get a random unused sector name
+          const availableNames = sectorNames.filter(name => 
+            !galaxySectors.some(s => s.name.toLowerCase() === name)
+          );
+          
+          if (availableNames.length === 0) return;
+          
+          const sectorName = availableNames[Math.floor(Math.random() * availableNames.length)];
+          const sectorAsset = getSectorAsset(sectorName);
+          
+          if (!sectorAsset) return;
+          
+          const isInitiallyDiscovered = ring === 1 || Math.random() < 0.3; // Nearby sectors more likely to be discovered
+          
+          const sector: Sector = {
+            id: sectorName.toLowerCase(),
+            hexQ: hex.q,
+            hexR: hex.r,
+            name: sectorAsset.name,
+            type: sectorAsset.type,
+            discoveredAt: isInitiallyDiscovered ? now : undefined,
+            notes: sectorAsset.description,
+            linkedEncounterIds: [],
+            linkedMissionIds: [],
+            isDangerous: sectorAsset.isDangerous,
+            createdAt: now,
+            updatedAt: now,
+          };
+          
+          galaxySectors.push(sector);
+          usedCoordinates.add(coordKey);
+        });
+      }
+      
+      // Clear existing sectors and add new ones
+      state.sectors = {};
+      galaxySectors.forEach(sector => {
         state.sectors[sector.id] = sector;
       });
       
-      state.currentSector = 'home-sector';
+      state.currentSector = 'lanai';
     },
   },
 });
