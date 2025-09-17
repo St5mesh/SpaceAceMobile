@@ -46,13 +46,79 @@ const sectorsSlice = createSlice({
         state.sectors[id].updatedAt = new Date();
       }
     },
+
+    discoverAdjacentSectors: (state, action: PayloadAction<UUID>) => {
+      const currentSectorId = action.payload;
+      const currentSector = state.sectors[currentSectorId];
+      
+      if (!currentSector) return;
+
+      // Find all adjacent sectors using hex coordinate neighbors
+      const neighbors = HexUtils.hexNeighbors({ 
+        q: currentSector.hexQ, 
+        r: currentSector.hexR 
+      });
+
+      // Auto-discover adjacent sectors when moving to a new sector
+      Object.values(state.sectors).forEach(sector => {
+        const isAdjacent = neighbors.some(neighbor => 
+          neighbor.q === sector.hexQ && neighbor.r === sector.hexR
+        );
+        
+        if (isAdjacent && !sector.discoveredAt) {
+          // Only discover adjacent sectors, don't fully explore them
+          // This creates the "known but not visited" state
+          sector.discoveredAt = new Date();
+          sector.updatedAt = new Date();
+        }
+      });
+    },
+
+    exploreSector: (state, action: PayloadAction<UUID>) => {
+      const id = action.payload;
+      const sector = state.sectors[id];
+      
+      if (sector) {
+        // Mark as discovered if not already
+        if (!sector.discoveredAt) {
+          sector.discoveredAt = new Date();
+        }
+        
+        // Set the sector as fully explored (can be used for additional data)
+        sector.updatedAt = new Date();
+      }
+    },
     
     moveTo: (state, action: PayloadAction<UUID>) => {
-      state.currentSector = action.payload;
-      // Auto-discover when moving to a sector
-      if (state.sectors[action.payload] && !state.sectors[action.payload].discoveredAt) {
-        state.sectors[action.payload].discoveredAt = new Date();
-        state.sectors[action.payload].updatedAt = new Date();
+      const targetSectorId = action.payload;
+      const previousSectorId = state.currentSector;
+      
+      state.currentSector = targetSectorId;
+      
+      // Auto-discover the target sector when moving to it
+      const targetSector = state.sectors[targetSectorId];
+      if (targetSector && !targetSector.discoveredAt) {
+        targetSector.discoveredAt = new Date();
+        targetSector.updatedAt = new Date();
+      }
+
+      // Discover adjacent sectors from the new position
+      if (targetSector) {
+        const neighbors = HexUtils.hexNeighbors({ 
+          q: targetSector.hexQ, 
+          r: targetSector.hexR 
+        });
+
+        Object.values(state.sectors).forEach(sector => {
+          const isAdjacent = neighbors.some(neighbor => 
+            neighbor.q === sector.hexQ && neighbor.r === sector.hexR
+          );
+          
+          if (isAdjacent && !sector.discoveredAt) {
+            sector.discoveredAt = new Date();
+            sector.updatedAt = new Date();
+          }
+        });
       }
     },
     
@@ -170,6 +236,8 @@ export const {
   createSector,
   updateSector,
   discoverSector,
+  discoverAdjacentSectors,
+  exploreSector,
   moveTo,
   linkEncounter,
   linkMission,

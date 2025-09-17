@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootState } from '../store';
-import { moveTo, discoverSector } from '../store/slices/sectorsSlice';
+import { moveTo, discoverSector, discoverAdjacentSectors } from '../store/slices/sectorsSlice';
 import { logQuickEvent } from '../store/slices/logEntriesSlice';
 import { LogEntryType, Sector, SectorType } from '../types';
 import HexGrid from '../components/HexGrid';
@@ -28,6 +28,7 @@ export default function GalaxyScreen() {
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
+  const [currentZoom, setCurrentZoom] = useState(1.0);
 
   useLayoutEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
@@ -35,6 +36,10 @@ export default function GalaxyScreen() {
     });
     return subscription?.remove;
   }, []);
+
+  const handleZoomChange = (scale: number) => {
+    setCurrentZoom(scale);
+  };
   
   const sectorList = Object.values(sectors).sort((a, b) => {
     // Sort by discovered first, then by distance from origin
@@ -136,9 +141,14 @@ export default function GalaxyScreen() {
               ({sector.hexQ}, {sector.hexR})
             </Text>
             {sector.discoveredAt && (
-              <Text style={styles.sectorType}>
-                {sector.type.charAt(0).toUpperCase() + sector.type.slice(1)}
-              </Text>
+              <View style={styles.sectorTypeContainer}>
+                <Text style={[styles.sectorType, { color: getSectorColor(sector) }]}>
+                  {sector.type.charAt(0).toUpperCase() + sector.type.slice(1)}
+                </Text>
+                {sector.type === SectorType.ANOMALY && (
+                  <Ionicons name="flash" size={12} color="#6F42C1" />
+                )}
+              </View>
             )}
           </View>
           <View style={styles.sectorActions}>
@@ -201,37 +211,27 @@ export default function GalaxyScreen() {
         </View>
       </View>
 
-      {/* Simple hex grid visualization */}
+      {/* Enhanced Hex Grid with Zoom/Pan */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Hex Grid (Simple View)</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.hexGrid}>
-            {sectorList.slice(0, 12).map((sector) => (
-              <TouchableOpacity
-                key={sector.id}
-                style={[
-                  styles.hexTile,
-                  sector.id === currentSectorId && styles.currentHexTile,
-                  !sector.discoveredAt && styles.undiscoveredHexTile,
-                ]}
-                onPress={() => handleHypersurf(sector)}
-              >
-                <Text style={[
-                  styles.hexTileText,
-                  sector.id === currentSectorId && styles.currentHexTileText
-                ]}>
-                  {sector.hexQ},{sector.hexR}
-                </Text>
-                <Text style={[
-                  styles.hexTileName,
-                  sector.id === currentSectorId && styles.currentHexTileText
-                ]}>
-                  {sector.discoveredAt ? sector.name : '???'}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Galaxy Hex Map</Text>
+          <View style={styles.zoomControls}>
+            <Text style={styles.zoomText}>
+              Zoom: {(currentZoom * 100).toFixed(0)}%
+            </Text>
           </View>
-        </ScrollView>
+        </View>
+        <View style={styles.hexGridWrapper}>
+          <HexGrid
+            sectors={sectorList}
+            currentSectorId={currentSectorId}
+            onSectorPress={handleHypersurf}
+            containerWidth={screenData.width - 40}
+            containerHeight={300}
+            initialScale={1.0}
+            onZoomChange={handleZoomChange}
+          />
+        </View>
       </View>
 
       {/* Sector List */}
@@ -291,6 +291,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  zoomControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  zoomText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  hexGridWrapper: {
+    backgroundColor: '#000011',
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   hexRow: {
     flexDirection: 'row',
@@ -380,7 +406,13 @@ const styles = StyleSheet.create({
   },
   sectorType: {
     fontSize: 12,
-    color: '#007AFF',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  sectorTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginTop: 2,
   },
   sectorActions: {
