@@ -33,12 +33,24 @@ const characterSlice = createSlice({
       }
     },
     
-    updateCharacterStats: (state, action: PayloadAction<{ fame?: number; sway?: number; heat?: number }>) => {
+    updateCharacterStats: (state, action: PayloadAction<{ 
+      fame?: number; 
+      sway?: number; 
+      heat?: number;
+      gumption?: { current?: number; maximum?: number };
+    }>) => {
       if (state.current) {
-        const { fame, sway, heat } = action.payload;
+        const { fame, sway, heat, gumption } = action.payload;
         if (fame !== undefined) state.current.fame = fame;
         if (sway !== undefined) state.current.sway = sway;
         if (heat !== undefined) state.current.heat = heat;
+        if (gumption) {
+          if (!state.current.gumption) {
+            state.current.gumption = { current: 0, maximum: 0 };
+          }
+          if (gumption.current !== undefined) state.current.gumption.current = gumption.current;
+          if (gumption.maximum !== undefined) state.current.gumption.maximum = gumption.maximum;
+        }
         state.current.updatedAt = new Date();
       }
     },
